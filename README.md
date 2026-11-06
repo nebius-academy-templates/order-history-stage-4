@@ -15,7 +15,7 @@ In `review-notes.md › Stage 4 › Before generating`: one line listing the dat
 
 ### 2. Let Claude draft it — the naive way
 
-New conversation. Paste `prompts/04-test-data.md` with the constraints file in the slot. It asks for "realistic and consistent" data. Don't improve it. Send.
+New conversation. Paste `prompts/04-test-data.md` with **only the suite table** from `constraints/parallel-run.md` in the slot — not the constraints. The model gets what a prompt normally gets: the tests, not the database rules. It asks for "realistic and consistent" data. Don't improve it. Send.
 
 Save the exchange, untouched, as `claude-runs/04a-test-data-naive.md`.
 
@@ -25,19 +25,19 @@ Lay the draft out worker by worker. Every collision goes in `Stage 4 › Collisi
 
 *item · which workers · what breaks at runtime, and why*
 
-Expect at least two. If you see none, reread the constraints — a value that's valid on its own is exactly what a collision looks like.
+Expect at least two. If you see none, reread the constraints — a value that's valid on its own is exactly what a collision looks like. A naive draft more often invents the seed data it needs than duplicates a value: a user that nobody created, an order number the database has not generated yet. Those count.
 
 *Fewer than two in your draft?* Then also review `samples/checkout-parallel-scenario.md` — a different suite with four seeded collisions — and list them under `Stage 4 › Control pass` the same way.
 
 ### 4. Generate again — engineered
 
-Change the construction, not the wording. Write a prompt that builds uniqueness in: a worker prefix on every account (`w1-`, `w2-`…), a per-run suffix on anything the database must not have seen, one dedicated zero-order user per worker, the shared fixture read-only, and database-generated values left for the test to *read*, never pre-specified. Send it; save as `claude-runs/04b-test-data-engineered.md`.
+Change the construction, not the wording. Write a prompt that gives the model the constraints and builds uniqueness in: a worker prefix on every account (`w1-`, `w2-`…), a per-run suffix on anything the database must not have seen, one dedicated zero-order user per worker, the shared fixture read-only, and database-generated values left for the test to *read*, never pre-specified. Send it; save as `claude-runs/04b-test-data-engineered.md`.
 
 In `Stage 4 › Scheme`, 3–5 lines: which technique closes which collision from step 3.
 
 ### 5. Deliver
 
-`data/order-history.data.json` — the engineered dataset, checked by you against the constraints once more. Every collision from step 3 must be impossible in it by construction. Statuses from your `OrderStatus`; test names from your Stage 1 steps.
+`data/order-history.data.json` — the engineered dataset, checked by you against the constraints once more. Every collision from step 3 must be impossible in it by construction. Statuses from your `OrderStatus`; test names from `constraints/parallel-run.md`, each mapped to the Stage 1 step numbers it covers.
 
 ### 6. One sentence
 
@@ -45,7 +45,7 @@ In `Stage 4 › Scheme`, 3–5 lines: which technique closes which collision fro
 
 ### Submit
 
-Commit, push, submit the repo link. Last stage: the reviewer reads `data/`, both `claude-runs/04*` files and your Stage 4 notes — and checks the repo holds together: test names in the data match the steps, statuses match the DTO, every step's Action has a method.
+Commit, push, submit the repo link. Last stage: the reviewer reads `data/`, both `claude-runs/04*` files and your Stage 4 notes — and checks the repo holds together: every test in the data maps to Stage 1 steps that exist, statuses match the DTO, every step's Action has a method.
 
 ### ✅ Before you submit
 
@@ -53,5 +53,5 @@ Commit, push, submit the repo link. Last stage: the reviewer reads `data/`, both
 - Notes › Before generating — isolated items in one line; each shared item with a reason
 - Notes › Collisions found — 2+ collisions: item · workers · what breaks and why (Control pass only if your draft gave fewer than two)
 - Notes › Scheme — which technique closes which collision
-- `data/order-history.data.json` — no shared mutable value across workers; no pre-specified DB-generated values; statuses from `OrderStatus`; test names from Stage 1
+- `data/order-history.data.json` — no shared mutable value across workers; no pre-specified DB-generated values; statuses from `OrderStatus`; test names from the suite, each mapped to Stage 1 steps
 - Notes › Hardest call — the structural gap, and the fix that doesn't depend on wording
